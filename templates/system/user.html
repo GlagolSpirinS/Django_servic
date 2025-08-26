@@ -1,0 +1,299 @@
+{% extends 'base/header.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<div class="container">
+    <h1 class="section-title" style="margin-bottom: 30px;">Управление <span>пользователями</span></h1>
+
+    <div class="layout" id="users-list">
+        {% for user in users %}
+        <div class="card user-card" data-user-id="{{ user.id }}">
+            <div>
+                <strong>{{ user.person_name }}</strong><br>
+                <small style="color: var(--text-secondary);">{{ user.get_role_display }} • {{ user.email }}</small>
+            </div>
+            <div style="margin-top: 16px; display: flex; gap: 10px;">
+                <button class="btn btn-outline edit-btn" onclick="openEditModal({{ user.id }})">Редактировать</button>
+                <button class="btn btn-outline"
+                        style="color: #f87171; border-color: #f87171;"
+                        onclick="confirmToggleUser({{ user.id }}, {{ user.is_active|lower }})">
+                    {{ user.is_active|yesno:"Отключить,Включить" }}
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <p style="color: var(--text-secondary);">Пользователи не найдены.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Popup Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content" style="background: var(--card-bg); padding: 32px; border-radius: var(--border-radius); max-width: 500px; width: 100%; position: relative; border: 1px solid #2d323d; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+        <span class="close-btn" style="position: absolute; top: 16px; right: 16px; font-size: 24px; cursor: pointer; color: #888;" onclick="closeModal()">&times;</span>
+        <h2 style="margin-bottom: 20px;">Редактировать пользователя</h2>
+        <form id="editUserForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" id="modal-user-id" name="user_id">
+
+            <!-- Avatar Preview -->
+            <div style="margin-bottom: 20px; text-align: center;">
+                <!-- Аватар (изначально скрыт) -->
+                <img id="avatar-preview" alt="Аватар"
+                     style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
+
+                <!-- Заглушка -->
+                <div id="avatar-placeholder" style="width: 80px; height: 80px; border-radius: 50%; background: #2d323d; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 12px;">
+                    Нет фото
+                </div>
+
+                <label for="avatar-upload" style="display: block; font-size: 14px; color: var(--text-secondary); cursor: pointer;">Загрузить новое фото</label>
+                <input type="file" id="avatar-upload" name="avatar" accept="image/*" style="display: none;">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; color: var(--text-primary);">Имя пользователя</label>
+                <input type="text" id="modal-person-name" name="person_name" class="form-input" required style="width: 100%; padding: 10px; background: #11141a; border: 1px solid #2d323d; color: var(--text-primary); border-radius: 8px;">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; color: var(--text-primary);">Email</label>
+                <input type="email" id="modal-email" name="email" class="form-input" disabled style="width: 100%; padding: 10px; background: #1a1e24; border: 1px solid #2d323d; color: #aaa; border-radius: 8px;">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; color: var(--text-primary);">Телефон</label>
+                <input type="text" id="modal-phone" name="phone_number" class="form-input" style="width: 100%; padding: 10px; background: #11141a; border: 1px solid #2d323d; color: var(--text-primary); border-radius: 8px;">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; color: var(--text-primary);">Адрес</label>
+                <textarea id="modal-address" name="address" class="form-input" style="width: 100%; padding: 10px; background: #11141a; border: 1px solid #2d323d; color: var(--text-primary); border-radius: 8px; resize: vertical;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; color: var(--text-primary);">Роль</label>
+                <select id="modal-role" name="role" class="form-input" style="width: 100%; padding: 10px; background: #11141a; border: 1px solid #2d323d; color: var(--text-primary); border-radius: 8px;">
+                    <option value="client">Клиент</option>
+                    <option value="engineer">Инженер</option>
+                    <option value="manager">Менеджер</option>
+                    <option value="admin">Администратор</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; color: var(--text-primary);">Должность</label>
+                <input type="text" id="modal-job-title" name="job_title" class="form-input" style="width: 100%; padding: 10px; background: #11141a; border: 1px solid #2d323d; color: var(--text-primary); border-radius: 8px;">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; color: var(--text-primary);">Отдел</label>
+                <input type="text" id="modal-department" name="department" class="form-input" style="width: 100%; padding: 10px; background: #11141a; border: 1px solid #2d323d; color: var(--text-primary); border-radius: 8px;">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; color: var(--text-primary);">График работы</label>
+                <textarea id="modal-schedule" name="work_schedule" class="form-input" style="width: 100%; padding: 10px; background: #11141a; border: 1px solid #2d323d; color: var(--text-primary); border-radius: 8px; resize: vertical;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; color: var(--text-primary);">Способ связи</label>
+                <select id="modal-contact-method" name="preferred_contact_method" class="form-input" style="width: 100%; padding: 10px; background: #11141a; border: 1px solid #2d323d; color: var(--text-primary); border-radius: 8px;">
+                    <option value="email">Email</option>
+                    <option value="phone">Телефон</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" id="save-btn" class="btn btn-primary">Сохранить</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal()">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Overlay -->
+<div id="modal-overlay" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999;" onclick="closeModal()"></div>
+
+<style>
+    .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        max-height: 90vh; /* This is the key change */
+        overflow-y: auto; /* This is also the key change */
+        -ms-overflow-style: none;  /* IE и Edge */
+        scrollbar-width: none;     /* Firefox */
+        overflow-y: auto;
+    }
+
+    .modal::-webkit-scrollbar {
+    display: none;             /* Chrome, Safari, Opera */
+}
+
+    .modal.active {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    .user-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .modal-content {
+        animation: modalFadeIn 0.3s ease-out;
+    }
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
+        to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+</style>
+
+    <script>
+    // Открытие модального окна
+    function openEditModal(userId) {
+        fetch(`/system/api/user/${userId}/`)
+            .then(res => {
+                if (!res.ok) throw new Error('Не удалось загрузить данные');
+                return res.json();
+            })
+            .then(data => {
+                document.getElementById('modal-user-id').value = data.id;
+                document.getElementById('modal-person-name').value = data.person_name;
+                document.getElementById('modal-email').value = data.email;
+                document.getElementById('modal-phone').value = data.phone_number || '';
+                document.getElementById('modal-address').value = data.address || '';
+                document.getElementById('modal-role').value = data.role;
+                document.getElementById('modal-job-title').value = data.job_title || '';
+                document.getElementById('modal-department').value = data.department || '';
+                document.getElementById('modal-schedule').value = data.work_schedule || '';
+                document.getElementById('modal-contact-method').value = data.preferred_contact_method;
+
+                // Аватар
+                const avatarPreview = document.getElementById('avatar-preview');
+                const avatarPlaceholder = document.getElementById('avatar-placeholder');
+                if (data.avatar) {
+                    avatarPreview.src = data.avatar;
+                    avatarPreview.style.display = 'block';
+                    avatarPlaceholder.style.display = 'none';
+                } else {
+                    const avatarUrl = `/media/avatars/${data.id}.jpg`;
+                    fetch(avatarUrl, { method: 'HEAD' })
+                        .then(res => {
+                            if (res.ok) {
+                                avatarPreview.src = avatarUrl;
+                                avatarPreview.style.display = 'block';
+                                avatarPlaceholder.style.display = 'none';
+                            } else {
+                                avatarPreview.style.display = 'none';
+                                avatarPlaceholder.style.display = 'flex';
+                            }
+                        })
+                        .catch(() => {
+                            avatarPreview.style.display = 'none';
+                            avatarPlaceholder.style.display = 'flex';
+                        });
+                }
+
+                document.getElementById('editModal').classList.add('active');
+                document.getElementById('modal-overlay').style.display = 'block';
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Ошибка загрузки данных пользователя.');
+            });
+    }
+
+    function closeModal() {
+        document.getElementById('editModal').classList.remove('active');
+        setTimeout(() => {
+            document.getElementById('modal-overlay').style.display = 'none';
+        }, 300);
+    }
+
+    function confirmToggleUser(userId, isActive) {
+        const action = isActive ? 'отключить' : 'включить';
+        if (confirm(`Вы уверены, что хотите ${action} аккаунт этого пользователя?`)) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.innerHTML = `
+                {% csrf_token %}
+                <input type="hidden" name="action" value="toggle">
+                <input type="hidden" name="user_id" value="${userId}">
+            `;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    // Клик по аватару или заглушке — открывает выбор файла
+    document.getElementById('avatar-placeholder').addEventListener('click', () => {
+        document.getElementById('avatar-upload').click();
+    });
+    document.getElementById('avatar-preview').addEventListener('click', () => {
+        document.getElementById('avatar-upload').click();
+    });
+
+    // Предпросмотр выбранного аватара
+    document.getElementById('avatar-upload').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const avatarPreview = document.getElementById('avatar-preview');
+                const avatarPlaceholder = document.getElementById('avatar-placeholder');
+                avatarPreview.src = e.target.result;
+                avatarPreview.style.display = 'block';
+                avatarPlaceholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Сохранение формы
+    document.getElementById('editUserForm').onsubmit = function (e) {
+        e.preventDefault();
+        const form = this;
+        const saveBtn = document.getElementById('save-btn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Сохранение...';
+
+        const formData = new FormData(form);
+        fetch('/system/api/user/update/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Данные пользователя обновлены.');
+                location.reload();
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Ошибка при сохранении. Проверьте соединение.');
+        })
+        .finally(() => {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Сохранить';
+        });
+    };
+</script>
+
+{% endblock %}

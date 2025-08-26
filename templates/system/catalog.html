@@ -1,0 +1,880 @@
+{% extends 'base/header.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="section-title">Админ панель <span>компьютеров</span></h1>
+
+
+    <div class="actions-bar" style="margin-bottom: 24px; text-align: right;">
+        <button class="btn btn-primary" id="add-computer-btn" style="padding: 12px 24px; font-size: 1rem;">
+            + Добавить компьютер
+        </button>
+    </div>
+
+    <div class="layout">
+        {% for computer in computers %}
+        <div class="card computer-card" data-id="{{ computer.id }}">
+            <div class="card-icon">
+                {% with computer.images.all|first as main_image %}
+                {% if main_image %}
+                <img src="{{ main_image.image.url }}" alt="{{ computer.name }}">
+                {% else %}
+                <img src="{% static 'images/default_computer.png' %}" alt="{{ computer.name }}">
+                {% endif %}
+                {% endwith %}
+            </div>
+            <h3>{{ computer.name|striptags }}</h3>
+            <p class="card-desc">{{ computer.short_description|striptags|truncatewords:20 }}</p>
+            <div class="card-specs">
+                <p><strong>Проц:</strong> {{ computer.processor|truncatechars:20 }}</p>
+                <p><strong>ОЗУ:</strong> {{ computer.ram }}</p>
+                <p><strong>Диск:</strong> {{ computer.storage|default:"—" }}</p>
+            </div>
+            <p class="price-highlight"><strong>Цена:</strong> {{ computer.get_price_display }}</p>
+
+        </div>
+        {% empty %}
+        <div class="no-computers">
+            <p>Компьютеры временно отсутствуют в каталоге.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Единый Popup -->
+<div class="popup" id="computer-popup">
+    <div class="popup-content">
+        <span class="popup-close" id="popup-close">&times;</span>
+
+        <div class="popup-left">
+            <div class="gallery">
+                <img src="" alt="Фото компьютера" class="gallery-image" id="current-image">
+            </div>
+            <div class="gallery-thumbs" id="gallery-thumbs">
+                <!-- Миниатюры будут добавлены динамически -->
+            </div>
+        </div>
+
+        <div class="popup-right">
+            <h2 id="popup-title">Загрузка...</h2>
+            <p class="price" id="popup-price"></p>
+
+            <div class="specs-grid" id="popup-specs">
+                <!-- Характеристики будут подставлены сюда -->
+            </div>
+            <div class="specs-grid">
+                <button class="btn btn-outline" id="edit-computer-btn" style="color: #ffae00; border-color: #ffae00;">Изменить</button>
+                <button class="btn btn-outline" id="delete-computer-btn" style="color: #f87171; border-color: #f87171;">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="popup" id="create-computer-popup" style="display: none;">
+    <div class="popup-content" style="
+        background: var(--dark-bg);
+        width: 90%;
+        max-width: 720px;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        position: relative;
+        border: 1px solid #2d323d;
+        max-height: 90vh;
+        overflow-y: auto;
+    ">
+        <span class="popup-close" id="popup-close-create" style="
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 28px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            background: none;
+            border: none;
+            z-index: 10;
+            transition: color 0.2s;
+        ">&times;</span>
+
+        <form id="computer-create-form" enctype="multipart/form-data" style="padding: 32px;">
+            {% csrf_token %}
+
+            <h2 style="font-size: 1.8rem; margin-bottom: 16px; color: var(--text-primary);">
+                Создать новый компьютер
+            </h2>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.95rem;">
+                Заполните все поля, чтобы добавить новый компьютер в каталог.
+            </p>
+
+            <!-- Основная информация -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Название</label>
+                <input type="text" name="name" class="form-control" required style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #2d323d;
+                    border-radius: 8px;
+                    background: var(--card-bg);
+                    color: var(--text-primary);
+                    font-size: 1rem;
+                ">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Категория</label>
+                <select name="category" class="form-control" required style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #2d323d;
+                    border-radius: 8px;
+                    background: var(--card-bg);
+                    color: var(--text-primary);
+                    font-size: 1rem;
+                ">
+                    <option value="gaming">Игровой</option>
+                    <option value="workstation">Рабочая станция</option>
+                    <option value="office">Офисный</option>
+                    <option value="home">Домашний</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Краткое описание</label>
+                <textarea name="short_description" class="form-control" rows="2" required style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #2d323d;
+                    border-radius: 8px;
+                    background: var(--card-bg);
+                    color: var(--text-primary);
+                    font-size: 1rem;
+                "></textarea>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Полное описание</label>
+                <textarea name="full_description" class="form-control" rows="5" required style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #2d323d;
+                    border-radius: 8px;
+                    background: var(--card-bg);
+                    color: var(--text-primary);
+                    font-size: 1rem;
+                "></textarea>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Цена (₽)</label>
+                <input type="number" name="price" step="0.01" min="0" required style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #2d323d;
+                    border-radius: 8px;
+                    background: var(--card-bg);
+                    color: var(--text-primary);
+                    font-size: 1rem;
+                ">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-weight: 500;">
+                    <input type="checkbox" name="is_available" checked>
+                    Доступен для заказа
+                </label>
+            </div>
+
+            <!-- Характеристики -->
+            <h3 style="color: var(--text-primary); margin: 28px 0 16px; font-size: 1.4rem;">Характеристики</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Процессор</label>
+                    <input type="text" name="processor" required style="
+                        width: 100%;
+                        padding: 12px;
+                        border: 1px solid #2d323d;
+                        border-radius: 8px;
+                        background: var(--card-bg);
+                        color: var(--text-primary);
+                        font-size: 1rem;
+                    ">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Видеокарта</label>
+                    <input type="text" name="graphics_card" required style="
+                        width: 100%;
+                        padding: 12px;
+                        border: 1px solid #2d323d;
+                        border-radius: 8px;
+                        background: var(--card-bg);
+                        color: var(--text-primary);
+                        font-size: 1rem;
+                    ">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">ОЗУ</label>
+                    <input type="text" name="ram" required style="
+                        width: 100%;
+                        padding: 12px;
+                        border: 1px solid #2d323d;
+                        border-radius: 8px;
+                        background: var(--card-bg);
+                        color: var(--text-primary);
+                        font-size: 1rem;
+                    ">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Накопитель</label>
+                    <input type="text" name="storage" required style="
+                        width: 100%;
+                        padding: 12px;
+                        border: 1px solid #2d323d;
+                        border-radius: 8px;
+                        background: var(--card-bg);
+                        color: var(--text-primary);
+                        font-size: 1rem;
+                    ">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Блок питания</label>
+                    <input type="text" name="power_supply" required style="
+                        width: 100%;
+                        padding: 12px;
+                        border: 1px solid #2d323d;
+                        border-radius: 8px;
+                        background: var(--card-bg);
+                        color: var(--text-primary);
+                        font-size: 1rem;
+                    ">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Корпус</label>
+                    <input type="text" name="case" required style="
+                        width: 100%;
+                        padding: 12px;
+                        border: 1px solid #2d323d;
+                        border-radius: 8px;
+                        background: var(--card-bg);
+                        color: var(--text-primary);
+                        font-size: 1rem;
+                    ">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Охлаждение</label>
+                    <input type="text" name="cooling" required style="
+                        width: 100%;
+                        padding: 12px;
+                        border: 1px solid #2d323d;
+                        border-radius: 8px;
+                        background: var(--card-bg);
+                        color: var(--text-primary);
+                        font-size: 1rem;
+                    ">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Операционная система</label>
+                    <input type="text" name="operating_system" placeholder="Например: Windows 11" style="
+                        width: 100%;
+                        padding: 12px;
+                        border: 1px solid #2d323d;
+                        border-radius: 8px;
+                        background: var(--card-bg);
+                        color: var(--text-primary);
+                        font-size: 1rem;
+                    ">
+                </div>
+            </div>
+
+            <!-- Загрузка изображений -->
+            <div style="margin: 28px 0;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Изображения</label>
+                <input type="file" name="images" id="image-upload" multiple accept="image/*" style="margin-bottom: 12px;">
+                <small style="color: var(--text-secondary); display: block;">
+                    Вы можете загрузить несколько изображений. Первое станет основным.
+                </small>
+            </div>
+
+            <!-- Кнопки -->
+            <div style="margin-top: 32px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn btn-outline" id="cancel-create">Отмена</button>
+                <button type="submit" class="btn btn-primary">Создать компьютер</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<style>
+    /* Увеличенные карточки */
+    .card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 32px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border: 1px solid #2d323d;
+        max-width: 350px;
+        margin: 0 auto;
+    }
+
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        border-color: rgba(74, 222, 128, 0.3);
+    }
+
+    .card-icon {
+        width: 100%;
+        height: 180px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #13161c;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .card-icon img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    .card h3 {
+        font-size: 1.35rem;
+        color: var(--text-primary);
+        margin: 12px 0 8px;
+    }
+
+    .card-desc {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-bottom: 16px;
+        flex-grow: 1;
+        line-height: 1.5;
+    }
+
+    .card-specs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 10px;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+    }
+
+    .card-specs p {
+        margin: 0;
+        color: var(--text-secondary);
+    }
+
+    .card-specs strong {
+        color: var(--text-primary);
+    }
+
+    .price-highlight {
+        font-size: 1.25rem;
+        color: var(--accent-green);
+        font-weight: 600;
+        margin-top: auto;
+    }
+
+    /* Popup стили */
+    .popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(6px);
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .popup.active {
+        display: flex;
+    }
+
+    .popup-content {
+        background: var(--dark-bg);
+        width: 92%;
+        max-width: 1100px;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 24px 50px rgba(0, 0, 0, 0.6);
+        display: flex;
+        flex-direction: row;
+        animation: scaleIn 0.4s ease-out;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .popup-close {
+        position: absolute;
+        top: 18px;
+        right: 24px;
+        font-size: 36px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        background: none;
+        border: none;
+        z-index: 10;
+    }
+
+    .popup-close:hover {
+        color: var(--accent-green);
+        transform: scale(1.1);
+    }
+
+    .popup-left, .popup-right {
+        padding: 36px;
+    }
+
+    .popup-left {
+        flex: 1;
+        border-right: 1px solid #2d323d;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .popup-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gallery img {
+        width: 100%;
+        max-height: 360px;
+        object-fit: contain;
+        border-radius: 12px;
+        background: #13161c;
+    }
+
+    .gallery-thumbs {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .gallery-thumbs img {
+        width: 76px;
+        height: 60px;
+        border-radius: 8px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: all 0.2s ease;
+        object-fit: cover;
+        border: 2px solid transparent;
+    }
+
+    .gallery-thumbs img.active {
+        opacity: 1;
+        border-color: var(--accent-green);
+    }
+
+    .specs-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 20px 0;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .spec-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .spec-item label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .spec-item span {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .price {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--accent-green);
+        margin: 10px 0 20px;
+    }
+
+    .no-computers {
+        text-align: center;
+        padding: 60px 20px;
+        grid-column: 1 / -1;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    /* Анимации */
+    @keyframes scaleIn {
+        0% { transform: scale(0.92); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+
+    /* Адаптивность */
+    @media (max-width: 900px) {
+        .popup-content {
+            flex-direction: column;
+        }
+
+        .popup-left {
+            border-right: none;
+            border-bottom: 1px solid #2d323d;
+        }
+
+        .popup-left, .popup-right {
+            padding: 28px;
+        }
+
+        .popup-left {
+            max-height: 400px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .layout {
+            grid-template-columns: 1fr;
+            justify-content: center;
+        }
+
+        .card {
+            max-width: none;
+            margin: 0 10px;
+        }
+
+        .specs-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // === Элементы DOM ===
+    const cards = document.querySelectorAll('.computer-card');
+    const popup = document.getElementById('computer-popup');
+    const createPopup = document.getElementById('create-computer-popup');
+    const closeBtn = document.getElementById('popup-close');
+    const closeCreateBtn = document.getElementById('popup-close-create');
+    const cancelCreateBtn = document.getElementById('cancel-create');
+    const addBtn = document.getElementById('add-computer-btn');
+    const form = document.getElementById('computer-create-form');
+    const editBtn = document.getElementById('edit-computer-btn');
+    const deleteBtn = document.getElementById('delete-computer-btn');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // === Глобальные переменные ===
+    let currentComputerId = null;
+
+    // === 1. Попап просмотра компьютера ===
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            const id = card.getAttribute('data-id');
+            currentComputerId = id;
+
+            const titleEl = document.getElementById('popup-title');
+            const priceEl = document.getElementById('popup-price');
+            const specsEl = document.getElementById('popup-specs');
+            const currentImage = document.getElementById('current-image');
+            const thumbsContainer = document.getElementById('gallery-thumbs');
+
+            titleEl.textContent = "Загрузка...";
+            priceEl.textContent = "";
+            specsEl.innerHTML = "";
+            thumbsContainer.innerHTML = "";
+
+            fetch(`/api/computer/${id}/`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`Ошибка загрузки: ${response.status}`);
+                    return response.json();
+                })
+                .then(pc => {
+                    titleEl.textContent = pc.name;
+                    priceEl.textContent = `Цена: ${pc.price}`;
+
+                    // Заполняем характеристики
+                    specsEl.innerHTML = `
+                        <div class="spec-item">
+                            <label>Процессор</label>
+                            <span>${pc.processor || '—'}</span>
+                        </div>
+                        <div class="spec-item">
+                            <label>Видеокарта</label>
+                            <span>${pc.graphics_card || '—'}</span>
+                        </div>
+                        <div class="spec-item">
+                            <label>ОЗУ</label>
+                            <span>${pc.ram || '—'}</span>
+                        </div>
+                        <div class="spec-item">
+                            <label>Накопитель</label>
+                            <span>${pc.storage || '—'}</span>
+                        </div>
+                        <div class="spec-item">
+                            <label>Блок питания</label>
+                            <span>${pc.power_supply || '—'}</span>
+                        </div>
+                        <div class="spec-item">
+                            <label>Охлаждение</label>
+                            <span>${pc.cooling || '—'}</span>
+                        </div>
+                        <div class="spec-item">
+                            <label>Операционная система</label>
+                            <span>${pc.operating_system || '—'}</span>
+                        </div>
+                    `;
+
+                    // Заполняем галерею
+                    thumbsContainer.innerHTML = '';
+                    if (pc.images && pc.images.length > 0) {
+                        pc.images.forEach((img, index) => {
+                            const thumb = document.createElement('img');
+                            thumb.src = img.image;
+                            thumb.alt = `Миниатюра ${index + 1}`;
+                            thumb.classList.add('thumb');
+                            if (index === 0) thumb.classList.add('active');
+                            thumb.dataset.src = img.image;
+                            thumbsContainer.appendChild(thumb);
+                        });
+                        currentImage.src = pc.images[0].image;
+                    } else {
+                        currentImage.src = "{% static 'images/default_computer.png' %}";
+                    }
+
+                    popup.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                })
+                .catch(error => {
+                    console.error('Не удалось загрузить информацию о компьютере:', error);
+                    titleEl.textContent = 'Ошибка загрузки';
+                    priceEl.textContent = '';
+                    specsEl.innerHTML = '<div style="color: #f87171;">Не удалось загрузить данные</div>';
+                });
+        });
+    });
+
+    // === Закрытие попапа просмотра ===
+    closeBtn.addEventListener('click', () => {
+        popup.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+
+    popup.addEventListener('click', (e) => {
+        if (e.target === popup) {
+            popup.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+
+    // === Переключение миниатюр ===
+    document.getElementById('gallery-thumbs').addEventListener('click', (e) => {
+        if (e.target.classList.contains('thumb')) {
+            document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+            document.getElementById('current-image').src = e.target.dataset.src;
+        }
+    });
+
+    // === Удаление компьютера (БЕЗ confirm) ===
+    deleteBtn.addEventListener('click', function () {
+        if (!currentComputerId) return;
+
+        fetch('{% url "computer_delete" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ id: currentComputerId })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Сетевая ошибка при удалении');
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const cardToRemove = document.querySelector(`.computer-card[data-id="${currentComputerId}"]`);
+                if (cardToRemove) cardToRemove.remove();
+
+                const layout = document.querySelector('.layout');
+                if (layout && layout.children.length === 0) {
+                    layout.innerHTML = `
+                        <div class="no-computers">
+                            <p>Компьютеры временно отсутствуют в каталоге.</p>
+                        </div>
+                    `;
+                }
+
+                popup.classList.remove('active');
+                document.body.style.overflow = '';
+            } else {
+                console.error('Ошибка сервера при удалении:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка удаления компьютера:', error);
+        });
+    });
+
+    // === 2. Попап создания/редактирования ===
+
+    // Открытие popup для создания
+    addBtn.addEventListener('click', () => {
+        resetCreatePopup();
+        createPopup.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    });
+
+    // Функция сброса формы
+    function resetCreatePopup() {
+        form.removeAttribute('data-edit-id');
+        form.querySelector('h2').textContent = 'Создать новый компьютер';
+        form.querySelector('button[type="submit"]').textContent = 'Создать компьютер';
+        form.reset();
+    }
+
+    // Открытие popup для редактирования
+    editBtn.addEventListener('click', () => {
+        if (!currentComputerId) return;
+
+        fetch(`/api/computer/${currentComputerId}/`)
+            .then(response => {
+                if (!response.ok) throw new Error(`Ошибка загрузки данных: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                form.querySelector('input[name="name"]').value = data.name;
+                form.querySelector('select[name="category"]').value = data.category;
+                form.querySelector('textarea[name="short_description"]').value = data.short_description || '';
+                form.querySelector('textarea[name="full_description"]').value = data.full_description || '';
+                form.querySelector('input[name="price"]').value = data.price;
+                form.querySelector('input[name="is_available"]').checked = data.is_available;
+                form.querySelector('input[name="processor"]').value = data.processor || '';
+                form.querySelector('input[name="graphics_card"]').value = data.graphics_card || '';
+                form.querySelector('input[name="ram"]').value = data.ram || '';
+                form.querySelector('input[name="storage"]').value = data.storage || '';
+                form.querySelector('input[name="power_supply"]').value = data.power_supply || '';
+                form.querySelector('input[name="case"]').value = data.case || '';
+                form.querySelector('input[name="cooling"]').value = data.cooling || '';
+                form.querySelector('input[name="operating_system"]').value = data.operating_system || '';
+
+                form.setAttribute('data-edit-id', currentComputerId);
+                form.querySelector('h2').textContent = 'Редактировать компьютер';
+                form.querySelector('button[type="submit"]').textContent = 'Сохранить изменения';
+
+                createPopup.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            })
+            .catch(err => {
+                console.error('Не удалось загрузить данные компьютера для редактирования:', err);
+            });
+    });
+
+    // Закрытие popup создания
+    [closeCreateBtn, cancelCreateBtn].forEach(btn => {
+        btn.addEventListener('click', () => {
+            createPopup.style.display = 'none';
+            document.body.style.overflow = '';
+            resetCreatePopup();
+        });
+    });
+
+    createPopup.addEventListener('click', (e) => {
+        if (e.target === createPopup) {
+            createPopup.style.display = 'none';
+            document.body.style.overflow = '';
+            resetCreatePopup();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (popup.classList.contains('active')) {
+                popup.classList.remove('active');
+            }
+            if (createPopup.style.display === 'flex') {
+                createPopup.style.display = 'none';
+                resetCreatePopup();
+            }
+            document.body.style.overflow = '';
+        }
+    });
+
+    // === Отправка формы (создание или редактирование) ===
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const computerId = form.getAttribute('data-edit-id');
+        const url = "{% url 'computer_save' %}";
+
+        const body = new FormData();
+        for (let [key, value] of formData) {
+            body.append(key, value);
+        }
+        if (computerId) {
+            body.append('id', computerId);
+        }
+
+        fetch(url, {
+            method: 'POST',
+            body: body,
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json().then(() => {
+                    location.reload(); // перезагрузка после успеха
+                });
+            } else {
+                return response.text().then(text => {
+                    try {
+                        const data = JSON.parse(text);
+                        const errors = Object.entries(data)
+                            .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+                            .join('\n');
+                        console.error('Ошибки валидации:\n', errors);
+                    } catch (e) {
+                        console.error('Ошибка 500 (не JSON):', text);
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка сети при отправке формы:', error);
+        });
+    });
+});
+</script>
+
+
+{% endblock %}

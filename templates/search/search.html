@@ -1,0 +1,61 @@
+{% extends 'base/header.html' %}
+
+{% block content %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/home/card.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home/grid.css' %}">
+
+
+    <p>Как нас найти</p>
+    <section class="layout">
+    <div class="card">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C8.13 2 5 5.13 5 9v6c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5v6H7v-6c0-2.76 2.24-5 5-5z"/>
+            <path d="M9 12h6M9 16h6"/>
+            <path d="M12 7v4"/>
+        </svg>
+        <div class="card__content">
+            <p class="card__title">Проверка и тестирование</p>
+            <p class="card__description">Каждый компьютер проходит полный цикл тестов перед тем, как попасть к клиенту.</p>
+        </div>
+    </div>
+
+    <!-- Карточка: Замена комплектующих -->
+    <div class="card">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M12 14l4-4-4-4"/>
+            <rect x="8" y="8" width="8" height="8" rx="1"/>
+        </svg>
+        <div class="card__content">
+            <p class="card__title">Гарантия качества</p>
+            <p class="card__description">Мы уверены в своей работе и даём гарантию на все услуги и сборки.</p>
+        </div>
+    </div>
+
+    <!-- Карточка: Чистка и охлаждение -->
+    <div class="card">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="8"/>
+            <path d="M12 8v4l3 3"/>
+            <path d="M8 12h1M16 12h1M12 8v-1M12 16v1"/>
+        </svg>
+        <div class="card__content">
+            <p class="card__title">Опытные мастера</p>
+            <p class="card__description">Специалисты с большой практикой в ремонте и сборке ПК.</p>
+        </div>
+    </div>
+
+    <!-- Карточка: Установка Windows и программ -->
+    <div class="card">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16M4 12h16M4 18h16"/>
+            <path d="M7 3v18M17 6l-4 3 4 3"/>
+        </svg>
+        <div class="card__content">
+            <p class="card__title">Индивидуальный подход</p>
+            <p class="card__description">Поможем с подбором комплектующих и проконсультируем бесплатно.</p>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

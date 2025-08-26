@@ -1,0 +1,395 @@
+{% extends 'base/header.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Ремонт компьютеров и готовые сборки</h1>
+            <p>Каждый компьютер мы тщательно тестируем перед выдачей клиенту. Гарантия качества на все работы и сборки.
+            </p>
+            <div class="hero-buttons">
+                <a href="/request/" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M12 2v20M2 12h20"></path>
+                    </svg>
+                    Нужен ремонт
+                </a>
+                <a href="/catalog/" class="btn btn-outline">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <path d="M3 9h18M9 21V9"></path>
+                    </svg>
+                    Каталог сборок
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title">Наши <span>услуги</span></h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path
+                            d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+                        </path>
+                    </svg>
+                </div>
+                <h3>Ремонт ПК и ноутбуков</h3>
+                <p>Устраняем любые неисправности: от замены блока питания до ремонта материнской платы.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M4 9h16"></path>
+                        <path d="M4 15h16"></path>
+                        <path d="M12 3v18"></path>
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    </svg>
+                </div>
+                <h3>Замена комплектующих</h3>
+                <p>Установим новую видеокарту, SSD, процессор или оперативную память. Подберём оптимальное решение.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+                <h3>Чистка и охлаждение</h3>
+                <p>Удаляем пыль, меняем термоинтерфейсы, проверяем систему охлаждения.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2z"></path>
+                        <path d="M21 19v-6a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2z"></path>
+                        <path d="M15 3a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2z"></path>
+                    </svg>
+                </div>
+                <h3>Установка Windows и программ</h3>
+                <p>Устанавливаем Windows, драйверы и весь необходимый софт. Готовая система — «под ключ».</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <path d="M14 2v6h6"></path>
+                        <path d="M16 13H8"></path>
+                        <path d="M16 17H8"></path>
+                        <path d="M10 9H8"></path>
+                    </svg>
+                </div>
+                <h3>Диагностика</h3>
+                <p>Определяем проблему и предлагаем решение. Диагностика бесплатна при ремонте.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Us Section -->
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title">Почему <span>выбирают нас</span></h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h3>Проверка и тестирование</h3>
+                <p>Каждый компьютер проходит полный цикл тестов перед тем, как попасть к клиенту.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                <h3>Гарантия качества</h3>
+                <p>Мы уверены в своей работе и даём гарантию на все услуги и сборки.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+                <h3>Опытные мастера</h3>
+                <p>Специалисты с большой практикой в ремонте и сборке ПК.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <h3>Индивидуальный подход</h3>
+                <p>Поможем с подбором комплектующих и проконсультируем бесплатно.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Hero Section Improvements */
+    .hero {
+        padding: 100px 0 80px;
+        text-align: center;
+        background: linear-gradient(135deg, rgba(15, 18, 24, 0.9) 0%, rgba(26, 29, 37, 0.9) 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(74,222,128,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .hero h1 {
+        font-size: 3.2rem;
+        margin-bottom: 24px;
+        line-height: 1.2;
+        background: linear-gradient(135deg, var(--accent-green), #6ee7b7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        margin: 0 auto 40px;
+        line-height: 1.6;
+        max-width: 600px;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .hero-buttons .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 32px;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 50px;
+        transition: var(--transition);
+    }
+
+    /* Features Section */
+    .features-section {
+        padding: 80px 0;
+    }
+
+    .features-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        justify-content: center;
+        align-items: stretch;
+        margin-top: 40px;
+    }
+
+    .feature-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 32px;
+        border: 1px solid #2d323d;
+        transition: var(--transition);
+        text-align: center;
+        flex: 1 1 280px;
+        max-width: 320px;
+        min-width: 250px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(74, 222, 128, 0.3);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+
+    .feature-icon {
+        color: var(--accent-green);
+        margin-bottom: 20px;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .feature-card:hover .feature-icon {
+        transform: scale(1.1);
+        color: #6ee7b7;
+    }
+
+    .feature-card h3 {
+        font-size: 1.4rem;
+        margin-bottom: 16px;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .feature-card p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Section Titles */
+    .section-title {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .section-title span {
+        background: linear-gradient(135deg, var(--accent-green), #6ee7b7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 968px) {
+        .hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+        }
+
+        .features-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero {
+            padding: 80px 0 60px;
+        }
+
+        .hero h1 {
+            font-size: 2.2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+
+        .features-section {
+            padding: 60px 0;
+        }
+
+        .hero-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-buttons .btn {
+            width: 100%;
+            max-width: 280px;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero h1 {
+            font-size: 1.8rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+        }
+
+        .feature-card {
+            padding: 24px;
+        }
+
+        .feature-icon svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.2rem;
+        }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .feature-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .feature-card:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .feature-card:nth-child(3) {
+        animation-delay: 0.2s;
+    }
+
+    .feature-card:nth-child(4) {
+        animation-delay: 0.3s;
+    }
+
+    .feature-card:nth-child(5) {
+        animation-delay: 0.4s;
+    }
+</style>
+{% endblock %}

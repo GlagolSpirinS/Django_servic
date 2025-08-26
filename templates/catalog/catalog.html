@@ -1,0 +1,464 @@
+{% extends 'base/header.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="section-title">Каталог <span>Компьютеров</span></h1>
+
+    <div class="layout">
+        {% for computer in computers %}
+        <div class="card computer-card" data-id="{{ computer.id }}">
+            <div class="card-icon">
+                {% with computer.images.all|first as main_image %}
+                {% if main_image %}
+                <img src="{{ main_image.image.url }}" alt="{{ computer.name }}">
+                {% else %}
+                <img src="{% static 'images/default_computer.png' %}" alt="{{ computer.name }}">
+                {% endif %}
+                {% endwith %}
+            </div>
+            <h3>{{ computer.name|striptags }}</h3>
+            <p class="card-desc">{{ computer.short_description|striptags|truncatewords:20 }}</p>
+            <div class="card-specs">
+                <p><strong>Проц:</strong> {{ computer.processor|truncatechars:20 }}</p>
+                <p><strong>ОЗУ:</strong> {{ computer.ram }}</p>
+                <p><strong>Диск:</strong> {{ computer.storage|default:"—" }}</p>
+            </div>
+            <p class="price-highlight"><strong>Цена:</strong> {{ computer.get_price_display }}</p>
+        </div>
+        {% empty %}
+        <div class="no-computers">
+            <p>Компьютеры временно отсутствуют в каталоге.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Единый Popup -->
+<div class="popup" id="computer-popup">
+    <div class="popup-content">
+        <span class="popup-close" id="popup-close">&times;</span>
+
+        <div class="popup-left">
+            <div class="gallery">
+                <img src="" alt="Фото компьютера" class="gallery-image" id="current-image">
+            </div>
+            <div class="gallery-thumbs" id="gallery-thumbs">
+                <!-- Миниатюры будут добавлены динамически -->
+            </div>
+        </div>
+
+        <div class="popup-right">
+            <h2 id="popup-title">Загрузка...</h2>
+            <p class="price" id="popup-price"></p>
+
+            <div class="specs-grid" id="popup-specs">
+                <!-- Характеристики будут подставлены сюда -->
+            </div>
+
+            <button class="btn btn-primary">Купить сейчас</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Увеличенные карточки */
+    .card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 32px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border: 1px solid #2d323d;
+        max-width: 350px;
+        margin: 0 auto;
+    }
+
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        border-color: rgba(74, 222, 128, 0.3);
+    }
+
+    .card-icon {
+        width: 100%;
+        height: 180px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #13161c;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .card-icon img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    .card h3 {
+        font-size: 1.35rem;
+        color: var(--text-primary);
+        margin: 12px 0 8px;
+    }
+
+    .card-desc {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-bottom: 16px;
+        flex-grow: 1;
+        line-height: 1.5;
+    }
+
+    .card-specs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 10px;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+    }
+
+    .card-specs p {
+        margin: 0;
+        color: var(--text-secondary);
+    }
+
+    .card-specs strong {
+        color: var(--text-primary);
+    }
+
+    .price-highlight {
+        font-size: 1.25rem;
+        color: var(--accent-green);
+        font-weight: 600;
+        margin-top: auto;
+    }
+
+    /* Popup стили */
+    .popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(6px);
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .popup.active {
+        display: flex;
+    }
+
+    .popup-content {
+        background: var(--dark-bg);
+        width: 92%;
+        max-width: 1100px;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 24px 50px rgba(0, 0, 0, 0.6);
+        display: flex;
+        flex-direction: row;
+        animation: scaleIn 0.4s ease-out;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .popup-close {
+        position: absolute;
+        top: 18px;
+        right: 24px;
+        font-size: 36px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        background: none;
+        border: none;
+        z-index: 10;
+    }
+
+    .popup-close:hover {
+        color: var(--accent-green);
+        transform: scale(1.1);
+    }
+
+    .popup-left, .popup-right {
+        padding: 36px;
+    }
+
+    .popup-left {
+        flex: 1;
+        border-right: 1px solid #2d323d;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .popup-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gallery img {
+        width: 100%;
+        max-height: 360px;
+        object-fit: contain;
+        border-radius: 12px;
+        background: #13161c;
+    }
+
+    .gallery-thumbs {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .gallery-thumbs img {
+        width: 76px;
+        height: 60px;
+        border-radius: 8px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: all 0.2s ease;
+        object-fit: cover;
+        border: 2px solid transparent;
+    }
+
+    .gallery-thumbs img.active {
+        opacity: 1;
+        border-color: var(--accent-green);
+    }
+
+    .specs-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 20px 0;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .spec-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .spec-item label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .spec-item span {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .price {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--accent-green);
+        margin: 10px 0 20px;
+    }
+
+    .no-computers {
+        text-align: center;
+        padding: 60px 20px;
+        grid-column: 1 / -1;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    /* Анимации */
+    @keyframes scaleIn {
+        0% { transform: scale(0.92); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+
+    /* Адаптивность */
+    @media (max-width: 900px) {
+        .popup-content {
+            flex-direction: column;
+        }
+
+        .popup-left {
+            border-right: none;
+            border-bottom: 1px solid #2d323d;
+        }
+
+        .popup-left, .popup-right {
+            padding: 28px;
+        }
+
+        .popup-left {
+            max-height: 400px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .layout {
+            grid-template-columns: 1fr;
+            justify-content: center;
+        }
+
+        .card {
+            max-width: none;
+            margin: 0 10px;
+        }
+
+        .specs-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    function getComputerData(computerId) {
+        return fetch(`/api/computer/${computerId}/`)
+            .then(response => {
+                if (!response.ok) throw new Error('Компьютер не найден');
+                return response.json();
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                const card = document.querySelector(`.computer-card[data-id="${computerId}"]`);
+                if (card) {
+                    return {
+                        name: card.querySelector('h3').textContent,
+                        price: card.querySelector('.price-highlight').textContent.replace('Цена: ', ''),
+                        specs: '<div class="spec-item"><label>Информация</label><span>Временно недоступна</span></div>',
+                        images: []
+                    };
+                }
+                throw error;
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const cards = document.querySelectorAll('.computer-card');
+        const popup = document.getElementById('computer-popup');
+        const closeBtn = document.getElementById('popup-close');
+        const titleEl = document.getElementById('popup-title');
+        const priceEl = document.getElementById('popup-price');
+        const specsEl = document.getElementById('popup-specs');
+        const currentImage = document.getElementById('current-image');
+        const thumbsContainer = document.getElementById('gallery-thumbs');
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                const id = card.getAttribute('data-id');
+                titleEl.textContent = "Загрузка...";
+                priceEl.textContent = "";
+                specsEl.innerHTML = "";
+                thumbsContainer.innerHTML = "";
+
+                getComputerData(id)
+                    .then(pc => {
+                        titleEl.textContent = pc.name;
+                        priceEl.textContent = `Цена: ${pc.price}`;
+
+                        // Группировка характеристик
+                        specsEl.innerHTML = `
+                            <div class="spec-item">
+                                <label>Процессор</label>
+                                <span>${pc.processor || '—'}</span>
+                            </div>
+                          <div class="spec-item">
+                                <label>Видеокарта</label>
+                                <span>${pc.graphics_card || '—'}</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>ОЗУ</label>
+                                <span>${pc.ram || '—'}</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Накопитель</label>
+                                <span>${pc.storage || '—'}</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Блок питания</label>
+                                <span>${pc.power_supply || '—'}</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Охлаждение</label>
+                                <span>${pc.cooling || '—'}</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Операционная система</label>
+                                <span>${pc.operating_system || '—'}</span>
+                            </div>
+                        `;
+
+                        thumbsContainer.innerHTML = '';
+                        if (pc.images && pc.images.length > 0) {
+                            pc.images.forEach((img, index) => {
+                                const thumb = document.createElement('img');
+                                thumb.src = img.image;
+                                thumb.alt = `Миниатюра ${index + 1}`;
+                                thumb.classList.add('thumb');
+                                if (index === 0) thumb.classList.add('active');
+                                thumb.dataset.src = img.image;
+                                thumbsContainer.appendChild(thumb);
+                            });
+                            currentImage.src = pc.images[0].image;
+                        } else {
+                            currentImage.src = "{% static 'images/default_computer.png' %}";
+                        }
+
+                        popup.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    })
+                    .catch(() => {
+                        alert("Не удалось загрузить информацию о компьютере");
+                    });
+            });
+        });
+
+        closeBtn.addEventListener('click', () => {
+            popup.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        popup.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                popup.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        thumbsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('thumb')) {
+                document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                currentImage.src = e.target.dataset.src;
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && popup.classList.contains('active')) {
+                popup.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    });
+</script>
+
+{% endblock %}

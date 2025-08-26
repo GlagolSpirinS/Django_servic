@@ -1,0 +1,721 @@
+{% extends 'base/header.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+
+<div class="container">
+    <h1 class="section-title" style="margin-bottom: 30px;">Управление <span>заявками</span></h1>
+
+    <!-- Kanban Board -->
+    <div class="kanban-board" style="display: flex; gap: 20px; overflow-x: auto; padding: 10px 0; min-height: 600px;">
+        <!-- Колонка: Ожидание -->
+        <div class="kanban-column" style="flex: 1; min-width: 300px; background: #1e293b; padding: 16px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="color: #fb923c; margin: 0 0 16px 0; font-size: 16px; text-align: center; font-weight: 500;">Ожидание</h3>
+            <div class="kanban-column-content" id="column-waiting" style="min-height: 100px; gap: 12px;">
+                {% for request in service_requests %}
+                    {% if request.status == 'waiting' %}
+                        <div 
+                            class="card request-card" 
+                            data-request-id="{{ request.id }}" 
+                            draggable="true" 
+                            ondragstart="drag(event)" 
+                            ondragend="dragEnd()"
+                            onclick="openRequestModal({{ request.id }})"
+                            style="margin-bottom: 10px; cursor: pointer; flex: none; width: 100%;"
+                        >
+                            <div>
+                                <strong>{{ request.full_name }}</strong><br>
+                                <small style="color: var(--text-secondary);">
+                                    {{ request.get_device_type_display }} • {{ request.get_customer_type_display }}
+                                </small><br>
+                                <small style="color: #9ca3af; font-size: 13px;">
+                                    {{ request.created_at|date:"d.m.Y H:i" }}
+                                </small>
+
+                                <!-- Теги -->
+                                <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px;">
+                                    <span style="color: #fb923c; background: #3c2415; padding: 2px 6px; border-radius: 4px;">Ожидание</span>
+                                    {% for tag in request.tags.all %}
+                                        <span style="
+                                            color: {{ tag.color }};
+                                            background-color: {{ tag.color }}22;
+                                            padding: 2px 6px;
+                                            border-radius: 4px;
+                                            font-size: 12px;
+                                            font-weight: 500;
+                                            white-space: nowrap;">
+                                            {{ tag.name }}
+                                        </span>
+                                    {% empty %}
+                                        <span style="color: #6b7280; font-size: 12px;">Без тегов</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% empty %}
+                    <p style="color: #6b7280; font-size: 14px; text-align: center;">Нет заявок</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Колонка: В работе -->
+        <div class="kanban-column" style="flex: 1; min-width: 300px; background: #1e293b; padding: 16px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="color: #0891b2; margin: 0 0 16px 0; font-size: 16px; text-align: center; font-weight: 500;">В работе</h3>
+            <div class="kanban-column-content" id="column-working" style="min-height: 100px; gap: 12px;">
+                {% for request in service_requests %}
+                    {% if request.status == 'working' %}
+                        <div 
+                            class="card request-card" 
+                            data-request-id="{{ request.id }}" 
+                            draggable="true" 
+                            ondragstart="drag(event)" 
+                            ondragend="dragEnd()"
+                            onclick="openRequestModal({{ request.id }})"
+                            style="margin-bottom: 10px; cursor: pointer; flex: none; width: 100%;"
+                        >
+                            <div>
+                                <strong>{{ request.full_name }}</strong><br>
+                                <small style="color: var(--text-secondary);">
+                                    {{ request.get_device_type_display }} • {{ request.get_customer_type_display }}
+                                </small><br>
+                                <small style="color: #9ca3af; font-size: 13px;">
+                                    {{ request.created_at|date:"d.m.Y H:i" }}
+                                </small>
+
+                                <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px;">
+                                    <span style="color: #0891b2; background: #122227; padding: 2px 6px; border-radius: 4px;">В работе</span>
+                                    {% for tag in request.tags.all %}
+                                        <span style="
+                                            color: {{ tag.color }};
+                                            background-color: {{ tag.color }}22;
+                                            padding: 2px 6px;
+                                            border-radius: 4px;
+                                            font-size: 12px;
+                                            font-weight: 500;
+                                            white-space: nowrap;">
+                                            {{ tag.name }}
+                                        </span>
+                                    {% empty %}
+                                        <span style="color: #6b7280; font-size: 12px;">Без тегов</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Колонка: Готов к выдаче -->
+        <div class="kanban-column" style="flex: 1; min-width: 300px; background: #1e293b; padding: 16px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="color: #16a34a; margin: 0 0 16px 0; font-size: 16px; text-align: center; font-weight: 500;">Готов к выдаче</h3>
+            <div class="kanban-column-content" id="column-finish" style="min-height: 100px; gap: 12px;">
+                {% for request in service_requests %}
+                    {% if request.status == 'finish' %}
+                        <div 
+                            class="card request-card" 
+                            data-request-id="{{ request.id }}" 
+                            draggable="true" 
+                            ondragstart="drag(event)" 
+                            ondragend="dragEnd()"
+                            onclick="openRequestModal({{ request.id }})"
+                            style="margin-bottom: 10px; cursor: pointer; flex: none; width: 100%;"
+                        >
+                            <div>
+                                <strong>{{ request.full_name }}</strong><br>
+                                <small style="color: var(--text-secondary);">
+                                    {{ request.get_device_type_display }} • {{ request.get_customer_type_display }}
+                                </small><br>
+                                <small style="color: #9ca3af; font-size: 13px;">
+                                    {{ request.created_at|date:"d.m.Y H:i" }}
+                                </small>
+
+                                <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px;">
+                                    <span style="color: #16a34a; background: #163020; padding: 2px 6px; border-radius: 4px;">Готов</span>
+                                    {% for tag in request.tags.all %}
+                                        <span style="
+                                            color: {{ tag.color }};
+                                            background-color: {{ tag.color }}22;
+                                            padding: 2px 6px;
+                                            border-radius: 4px;
+                                            font-size: 12px;
+                                            font-weight: 500;
+                                            white-space: nowrap;">
+                                            {{ tag.name }}
+                                        </span>
+                                    {% empty %}
+                                        <span style="color: #6b7280; font-size: 12px;">Без тегов</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Popup Modal -->
+<div id="requestModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" style="position: absolute; top: 16px; right: 16px; font-size: 24px; cursor: pointer; color: #888;" onclick="closeModal()">&times;</span>
+        <h2 style="margin-bottom: 20px;">Детали заявки</h2>
+
+        <div id="modal-content-loading" style="color: var(--text-secondary); padding: 20px 0;">Загрузка...</div>
+
+        <div id="modal-content-data" style="display: none;">
+            <!-- Данные будут подгружаться через JS -->
+        </div>
+    </div>
+</div>
+
+<!-- Overlay -->
+<div id="modal-overlay" class="modal-overlay"></div>
+
+<!-- Стили -->
+<style>
+    /* === Улучшенные стили для Drag & Drop === */
+    .kanban-column-content {
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transition: background 0.2s ease;
+    }
+
+    .kanban-column-content.drag-over {
+        background: #2d3748;
+        border: 2px dashed #fb923c;
+        border-radius: 8px;
+    }
+
+    .request-card.dragging {
+        opacity: 0.9;
+        transform: scale(1.03);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+        position: relative;
+        z-index: 1000;
+    }
+
+    .drop-placeholder {
+        background: #334155;
+        border: 2px dashed #0891b2;
+        border-radius: 8px;
+        min-height: 80px;
+        margin-bottom: 12px;
+        pointer-events: none;
+    }
+
+    /* Основной стиль карточки */
+    .request-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: #2d3748;
+        padding: 16px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+
+    .request-card:hover:not(.dragging) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    /* === Модальное окно: Фиксированный размер === */
+    .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        max-height: 90vh;
+        width: auto;
+    }
+
+    .modal.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* Фиксированный размер модального окна */
+    .modal-content {
+        width: 600px;
+        height: 700px;
+        background: var(--card-bg);
+        padding: 32px;
+        border-radius: var(--border-radius);
+        border: 1px solid #2d323d;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        position: relative;
+        overflow-y: auto; /* Прокрутка только внутри */
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Анимация появления */
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
+        to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    .modal-content {
+        animation: modalFadeIn 0.3s ease-out;
+    }
+
+    .modal-content {
+        -ms-overflow-style: none;  /* IE и Edge */
+        scrollbar-width: none;     /* Firefox */
+    }
+
+    .modal-content::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Edge */
+    }
+
+    .modal-content::-webkit-scrollbar-track {
+        background: #1e293b;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb {
+        background: #4b5563;
+        border-radius: 3px;
+    }
+
+    /* Стили контента */
+    .detail-row {
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #2d323d;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .detail-label {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        color: var(--text-primary);
+        line-height: 1.5;
+    }
+
+    .issues-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 4px;
+    }
+
+    .issue-tag {
+        background: #2d323d;
+        color: #fb923c;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+    .btn-primary {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .btn-primary:hover {
+        background: #0056b3;
+    }
+
+    #tags-checkboxes label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 6px 0;
+    }
+
+    #tags-checkboxes input[type="checkbox"] {
+        accent-color: #007bff;
+        width: 16px;
+        height: 16px;
+    }
+
+    /* Оверлей */
+    #modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 999;
+    }
+</style>
+
+<!-- JavaScript -->
+<script>
+    const STATUS_CHOICES = [
+        { value: 'waiting', label: 'Ожидание' },
+        { value: 'working', label: 'В работе' },
+        { value: 'finish', label: 'Готов к выдаче' }
+    ];
+
+    let draggedCard = null;
+    let placeholder = null;
+
+    function drag(ev) {
+        draggedCard = ev.target;
+        setTimeout(() => draggedCard.classList.add('dragging'), 0);
+        ev.dataTransfer.setData("text/plain", draggedCard.dataset.requestId);
+    }
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+
+        const column = ev.currentTarget;
+        const afterElement = getDragAfterElement(column, ev.clientY);
+
+        if (placeholder) placeholder.remove();
+        placeholder = document.createElement('div');
+        placeholder.classList.add('drop-placeholder');
+
+        if (afterElement == null) {
+            column.appendChild(placeholder);
+        } else {
+            column.insertBefore(placeholder, afterElement);
+        }
+
+        column.classList.add('drag-over');
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+
+        const column = ev.currentTarget;
+        const requestId = ev.dataTransfer.getData("text/plain");
+        const card = document.querySelector(`[data-request-id="${requestId}"]`);
+
+        if (card && column && placeholder) {
+            column.insertBefore(card, placeholder);
+            placeholder.remove();
+            placeholder = null;
+            column.classList.remove('drag-over');
+            card.classList.remove('dragging');
+
+            let newStatus = '';
+            if (column.id === 'column-waiting') newStatus = 'waiting';
+            else if (column.id === 'column-working') newStatus = 'working';
+            else if (column.id === 'column-finish') newStatus = 'finish';
+
+            fetch(`/system/api/service-requests/${requestId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Не удалось обновить статус');
+                console.log(`Статус заявки ${requestId} обновлён: ${newStatus}`);
+            })
+            .catch(err => {
+                console.error('Ошибка:', err);
+                alert('Ошибка при обновлении статуса. Перезагрузка...');
+                location.reload();
+            });
+        }
+    }
+
+    function dragEnd() {
+        if (draggedCard) {
+            draggedCard.classList.remove('dragging');
+            draggedCard = null;
+        }
+        document.querySelectorAll('.kanban-column-content').forEach(col => {
+            col.classList.remove('drag-over');
+        });
+        if (placeholder) {
+            placeholder.remove();
+            placeholder = null;
+        }
+    }
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.request-card:not(.dragging)')];
+
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // Инициализация событий для колонок
+    document.querySelectorAll('.kanban-column-content').forEach(col => {
+        col.addEventListener('dragover', allowDrop);
+        col.addEventListener('drop', drop);
+        col.addEventListener('dragleave', (e) => {
+            if (!e.relatedTarget || !e.relatedTarget.closest('.kanban-column-content')) {
+                col.classList.remove('drag-over');
+            }
+        });
+    });
+
+    document.getElementById('modal-overlay').addEventListener('click', closeModal);
+
+    // Закрытие по клавише Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+
+    // Модальное окно
+    function openRequestModal(requestId) {
+        const modal = document.getElementById('requestModal');
+        const overlay = document.getElementById('modal-overlay');
+        const loading = document.getElementById('modal-content-loading');
+        const content = document.getElementById('modal-content-data');
+
+        content.innerHTML = '';
+        loading.style.display = 'block';
+        content.style.display = 'none';
+        modal.classList.add('active');
+        overlay.style.display = 'block';
+
+        const modalContent = modal.querySelector('.modal-content');
+            modalContent.onclick = function(e) {
+            e.stopPropagation(); // Останавливаем всплытие события
+        };
+
+        fetch(`/system/api/service-requests/${requestId}/`)
+            .then(res => {
+                if (!res.ok) throw new Error('Не удалось загрузить заявку');
+                return res.json();
+            })
+            .then(data => {
+                const issuesHtml = data.issues?.map(issue =>
+                    `<span class="issue-tag">${escapeHtml(issue.description)}</span>`
+                ).join('') || '';
+
+                const issuesOther = data.issues_other
+                    ? `<p><strong>Другие симптомы:</strong> ${escapeHtml(data.issues_other)}</p>`
+                    : '';
+
+                const statusOptions = STATUS_CHOICES.map(choice => {
+                    const selected = data.status === choice.value ? 'selected' : '';
+                    return `<option value="${choice.value}" ${selected}>${choice.label}</option>`;
+                }).join('');
+
+                content.innerHTML = `
+                    <div class="detail-row">
+                        <div class="detail-label">ФИО</div>
+                        <div class="detail-value">${escapeHtml(data.full_name)}</div>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="detail-label">Тип заказчика</div>
+                        <div class="detail-value">${escapeHtml(data.customer_type_display)}</div>
+                    </div>
+
+                    ${data.organization_name ? `
+                    <div class="detail-row">
+                        <div class="detail-label">Организация</div>
+                        <div class="detail-value">${escapeHtml(data.organization_name)}</div>
+                    </div>
+                    ` : ''}
+
+                    ${data.inn ? `
+                    <div class="detail-row">
+                        <div class="detail-label">ИНН</div>
+                        <div class="detail-value">${escapeHtml(data.inn)}</div>
+                    </div>
+                    ` : ''}
+
+                    <div class="detail-row">
+                        <div class="detail-label">Контакты</div>
+                        <div class="detail-value">
+                            📞 ${escapeHtml(data.phone_number)}<br>
+                            ✉️ ${escapeHtml(data.email)}<br>
+                            📍 ${escapeHtml(data.address)}
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="detail-label">Устройство</div>
+                        <div class="detail-value">${escapeHtml(data.device_type_display)}</div>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="detail-label">Симптомы</div>
+                        <div class="issues-list">${issuesHtml}</div>
+                        ${issuesOther}
+                    </div>
+
+                    ${data.description ? `
+                    <div class="detail-row">
+                        <div class="detail-label">Описание</div>
+                        <div class="detail-value">${escapeHtml(data.description)}</div>
+                    </div>
+                    ` : ''}
+
+                    ${data.external_links ? `
+                    <div class="detail-row">
+                        <div class="detail-label">Ссылки</div>
+                        <div class="detail-value">
+                            ${data.external_links.split('\n')
+                              .filter(link => link.trim())
+                              .map(link => `<a href="${escapeHtml(link.trim())}" target="_blank">${escapeHtml(link.trim())}</a>`)
+                              .join('<br>')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div class="detail-row">
+                        <div class="detail-label">Статус</div>
+                        <select id="status-select" style="padding: 8px; border-radius: 6px; background: #1e293b; color: white; border: 1px solid #334155; width: 100%;">
+                            ${statusOptions}
+                        </select>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="detail-label">Теги</div>
+                        <div id="tags-checkboxes" style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                            <!-- Чекбоксы будут добавлены здесь -->
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="detail-label">Дата создания</div>
+                        <div class="detail-value">${new Date(data.created_at).toLocaleString('ru-RU')}</div>
+                    </div>
+
+                    <div style="margin-top: 24px; text-align: right;">
+                        <button class="btn btn-outline" onclick="saveRequestChanges(${data.id})">
+                            Сохранить изменения
+                        </button>
+                    </div>
+                `;
+
+                // Генерация чекбоксов с цветами
+                const tagsContainer = document.getElementById('tags-checkboxes');
+                tagsContainer.innerHTML = '';
+
+                data.available_tags.forEach(tag => {
+                    const isChecked = data.tags.some(t => t.code === tag.code);
+                    const label = document.createElement('label');
+                    label.style.display = 'flex';
+                    label.style.alignItems = 'center';
+                    label.style.gap = '10px';
+                    label.style.fontSize = '14px';
+
+                    label.innerHTML = `
+                        <input type="checkbox" value="${escapeHtml(tag.code)}" ${isChecked ? 'checked' : ''}>
+                        <span style="
+                            display: inline-block;
+                            width: 12px;
+                            height: 12px;
+                            border-radius: 50%;
+                            background-color: ${tag.color};
+                            border: 1px solid #444;">
+                        </span>
+                        <span style="color: ${tag.color};">${escapeHtml(tag.name)}</span>
+                    `;
+                    tagsContainer.appendChild(label);
+                });
+
+                loading.style.display = 'none';
+                content.style.display = 'block';
+            })
+            .catch(err => {
+                console.error(err);
+                content.innerHTML = `<p style="color: #f87171;">Ошибка загрузки данных.</p>`;
+                loading.style.display = 'none';
+                content.style.display = 'block';
+            });
+    }
+
+    function saveRequestChanges(requestId) {
+        const status = document.getElementById('status-select').value;
+        const selectedTags = Array.from(
+            document.querySelectorAll('#tags-checkboxes input[type="checkbox"]:checked')
+        ).map(cb => cb.value);
+
+        fetch(`/system/api/service-requests/${requestId}/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ status, tags: selectedTags })
+        })
+        .then(res => res.ok ? res.json() : Promise.reject(res))
+        .then(() => {
+            closeModal();
+            location.reload();
+        })
+        .catch(err => {
+            console.error('Ошибка:', err);
+        });
+    }
+
+        function closeModal() {
+            document.getElementById('requestModal').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('modal-overlay').style.display = 'none';
+            }, 300); // Соответствует времени анимации
+        }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+{% endblock %}

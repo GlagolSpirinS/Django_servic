@@ -1,0 +1,52 @@
+{% extends 'base/header.html' %}
+{% load static %}
+
+{% block content %}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+<div class="container">
+    <div class="layout" style="justify-content: center;">
+        <div class="card" style="max-width: 500px; text-align: center;">
+            <h2 style="margin-bottom: 24px;">Регистрация по электронной почте</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px;">
+                Введите вашу почту, и мы отправим код подтверждения.
+            </p>
+
+            <form method="post">
+    {% csrf_token %}
+
+    <div style="margin-bottom: 24px; text-align: left;">
+        <label for="email" style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">
+            Электронная почта
+        </label>
+        <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="example@mail.ru"
+            required
+            style="width: 100%; padding: 12px 16px; background: #11141a; border: 1px solid #2d323d; border-radius: var(--border-radius); color: var(--text-primary); font-size: 16px; transition: var(--transition);"
+        >
+    </div>
+
+    <div style="margin-bottom: 24px; text-align: left;">
+        <label for="person_name" style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">
+            ФИО
+        </label>
+        <input
+            type="text"
+            id="person_name"
+            name="person_name"
+            placeholder="Иванов Иван Иванович"
+            maxlength="150"
+            style="width: 100%; padding: 12px 16px; background: #11141a; border: 1px solid #2d323d; border-radius: var(--border-radius); color: var(--text-primary); font-size: 16px; transition: var(--transition);"
+        >
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width: 100%;">
+        Зарегистрироваться
+    </button>
+</form>
+        </div>
+    </div>
+</div>
+{% endblock %}
