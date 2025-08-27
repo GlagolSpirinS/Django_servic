@@ -275,18 +275,20 @@ def computer_api_detail(request, computer_id):
             <strong>ОС:</strong> {computer.operating_system or 'Не установлена'}
         """,
         'images': [
-            {
-                'image': img.image.url,
-                'is_main': img.is_main,
-                'order': img.order
-            } for img in computer.images.all().order_by('order')
-        ] or [
-            {
-                'image': request.build_absolute_uri(static('images/default_computer.png')),
-                'is_main': True,
-                'order': 0
-            }
-        ]
+                {
+                    'image': img.image.url,
+                    'is_main': img.is_main,
+                    'order': img.order
+                } for img in computer.images.all().order_by('order')
+            ] or (
+                [
+                    {
+                        'image': request.build_absolute_uri(f"{settings.STATIC_URL}images/default_computer.png"),
+                        'is_main': True,
+                        'order': 0
+                    }
+                ] if settings.STATIC_URL else []
+            ),
     }
 
     return JsonResponse(data, json_dumps_params={'ensure_ascii': False})
