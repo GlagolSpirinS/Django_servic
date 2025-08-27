@@ -1,5 +1,6 @@
 import random
 import smtplib
+from venv import logger
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import authenticate, login, logout
@@ -275,20 +276,18 @@ def computer_api_detail(request, computer_id):
             <strong>ОС:</strong> {computer.operating_system or 'Не установлена'}
         """,
         'images': [
-                {
-                    'image': img.image.url,
-                    'is_main': img.is_main,
-                    'order': img.order
-                } for img in computer.images.all().order_by('order')
-            ] or (
-                [
-                    {
-                        'image': request.build_absolute_uri(f"{settings.STATIC_URL}images/default_computer.png"),
-                        'is_main': True,
-                        'order': 0
-                    }
-                ] if settings.STATIC_URL else []
-            ),
+            {
+                'image': img.image.url,
+                'is_main': img.is_main,
+                'order': img.order
+            } for img in computer.images.all().order_by('order')
+        ] or [
+            {
+                'image': request.build_absolute_uri(static('images/default_computer.png')),
+                'is_main': True,
+                'order': 0
+            }
+        ]
     }
 
     return JsonResponse(data, json_dumps_params={'ensure_ascii': False})
@@ -351,7 +350,8 @@ def profile(request):
             messages.success(request, 'Профиль успешно обновлён!')
             return redirect('profile')
         else:
-            messages.error(request, 'Пожалуйста, исправьте ошибки.')
+            logger.error(f"Ошибки формы профиля: {form.errors.as_json()}")
+            print(f"[DEBUG] Ошибки формы: {form.errors.as_text()}")
     else:
         form = ProfileForm(instance=user)
 

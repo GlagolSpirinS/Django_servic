@@ -19,6 +19,29 @@ def crm(request):
     return render(request, 'system/user.html', {'users': users})
 
 
+@login_required
+def user_self(request):
+    # Принудительно получаем свежие данные из БД
+    user = User.objects.get(id=request.user.id)
+
+    return JsonResponse({
+        'id': user.id,
+        'person_name': user.person_name,
+        'email': user.email,
+        'phone_number': user.phone_number,
+        'address': user.address,
+        'role': user.role,
+        'job_title': user.job_title,
+        'department': user.department,
+        'work_schedule': user.work_schedule,
+        'preferred_contact_method': user.preferred_contact_method,
+        'avatar': user.avatar.url if user.avatar else None,
+        'is_active': user.is_active,
+        'created_at': user.created_at.isoformat() if user.created_at else None,
+        'last_login': user.last_login.isoformat() if user.last_login else None,
+    })
+
+
 # Получение данных пользователя
 @login_required
 def get_user_data(request, user_id):

@@ -23,11 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-=c-(yp5=5#-l4^6*qaadhf-wgwl%g=()!01b6523^!jhd%fx^#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 LOGIN_URL = '/auth/login/'
 
-ALLOWED_HOSTS = ['compdog.ru', '46.173.27.66', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['compdog.ru', '46.173.27.66', '127.0.0.1']
 
 # Application definition
 
